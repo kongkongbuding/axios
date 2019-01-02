@@ -1,3 +1,7 @@
+# use
+
+ - [这么初始化](https://github.com/kongkongbuding/vuestudy/blob/master/src/main.js)
+
 # axios
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
