@@ -1,4 +1,3 @@
-/* axios v0.19.0-beta.1 | (c) 2018 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -608,7 +607,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {object} [params] The params to be appended
 	 * @returns {string} The formatted url
 	 */
-	module.exports = function buildURL(url, params, paramsSerializer) {
+	module.exports = function buildURL(url, params, paramsSerializer, state) {
 	  /*eslint no-param-reassign:0*/
 	  if (!params) {
 	    return url;
@@ -620,7 +619,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	  } else if (utils.isURLSearchParams(params)) {
 	    serializedParams = params.toString();
 	  } else {
-	    var parts = [];
+	    
+	    if (url.indexOf("?") !== -1) {   
+	      var theRequest = new Object()
+	      var str = url.substr(url.indexOf("?") + 1);   
+	      var strs = str.split("&");   
+	      for (var i = 0, len = strs.length; i < len; i ++) {   
+	          theRequest[strs[i].split("=")[0]] = strs[i].split("=")[1]
+	      }
+	      url = url.substring(0, url.indexOf("?"))
+	      theRequest = state ? Object.assign({}, theRequest, params) : Object.assign({}, params, theRequest)
+	      params = theRequest
+	    }
+	    
+	    var parts = []
 	
 	    utils.forEach(params, function serialize(val, key) {
 	      if (val === null || typeof val === 'undefined') {
@@ -742,6 +754,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	module.exports = function dispatchRequest(config) {
 	  throwIfCancellationRequested(config);
+	
+	  var urlHelp = config.urlHelp
+	  if (urlHelp) {
+	    if (urlHelp.baseURL && config.baseURL !== urlHelp.baseURL) {
+	      config.baseURL = urlHelp.baseURL
+	    }
+	  
+	    if (urlHelp.api && urlHelp.api[config.url]) {
+	      config.url = urlHelp.api[config.url]
+	    }
+	  }
 	
 	  // Support baseURL config
 	  if (config.baseURL && !isAbsoluteURL(config.url)) {
@@ -1219,8 +1242,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (code) {
 	    error.code = code;
 	  }
+	
 	  error.request = request;
 	  error.response = response;
+	  error.isAxiosError = true;
+	
 	  error.toJSON = function() {
 	    return {
 	      // Standard
